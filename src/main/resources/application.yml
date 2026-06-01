@@ -1,0 +1,20 @@
+# 1. Bypass the Windows locked port by using 9090
+server:
+  port: 9090
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      # 2. Tell the Gateway to automatically create routes based on Eureka!
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+# 3. Tell the Gateway where the Eureka Phonebook is located
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
