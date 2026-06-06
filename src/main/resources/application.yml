@@ -1,4 +1,3 @@
-# 1. Bypass the Windows locked port by using 9090
 server:
   port: 9090
 
@@ -6,15 +5,42 @@ spring:
   application:
     name: api-gateway
   cloud:
+    config:
+      enabled: false
     gateway:
-      # 2. Tell the Gateway to automatically create routes based on Eureka!
       discovery:
         locator:
           enabled: true
-          lower-case-service-id: true
+          lower-case-service-name: true
 
-# 3. Tell the Gateway where the Eureka Phonebook is located
+      # Explicit routing definitions mapping prefixes to microservices
+      routes:
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            # 1. Matches any URL starting with /auth-service/
+            - Path=/auth-service/**
+          filters:
+            # 2. Strips '/auth-service' out of the path before sending to Auth Service
+            - StripPrefix=1
+
+        - id: store-service
+          uri: lb://STORE-SERVICE
+          predicates:
+            # 1. Matches any URL starting with /store-service/
+            - Path=/store-service/**
+          filters:
+            # 2. Strips '/store-service' out of the path before sending to Store Service
+            - StripPrefix=1
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://eureka-server:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: ${JWT_SECRET:ShopSphereSuperSecretKeyForJwtGenerationDoNotShare}
